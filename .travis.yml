@@ -7,6 +7,10 @@ php:
   - 7.0
   - hhvm
 
+branches:
+  only:
+    - master
+
 env:
   global:
     - setup=basic
@@ -24,5 +28,11 @@ install:
   - if [[ $setup = 'basic' ]]; then travis_retry composer install --no-interaction --prefer-source; fi
   - if [[ $setup = 'stable' ]]; then travis_retry composer update --prefer-source --no-interaction --prefer-stable; fi
   - if [[ $setup = 'lowest' ]]; then travis_retry composer update --prefer-source --no-interaction --prefer-lowest --prefer-stable; fi
+  - mysql -e 'create database testing;'
+  - php -r "copy('.env.example', '.env');"
+  - php artisan key:generate
+  - sed -i s/DB_DATABASE=homestead/DB_DATABASE=testing/ .env
+  - sed -i s/DB_USERNAME=homestead/DB_USERNAME=root/ .env
+  - sed -i s/DB_PASSWORD=secret/DB_PASSWORD=null/ .env
 
 script: vendor/bin/phpunit
